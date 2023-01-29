@@ -17,14 +17,14 @@ class SearchModel {
     required this.message,
   });
 
-  List<Datum> data;
+  List<Products> data;
   Links links;
   Meta meta;
   String status;
   String message;
 
   factory SearchModel.fromJson(Map<String, dynamic> json) => SearchModel(
-    data: List<Datum>.from(json["data"].map((x) => Datum.fromJson(x))),
+    data: List<Products>.from(json["data"].map((x) => Products.fromJson(x))),
     links: Links.fromJson(json["links"]),
     meta: Meta.fromJson(json["meta"]),
     status: json["status"],
@@ -40,8 +40,8 @@ class SearchModel {
   };
 }
 
-class Datum {
-  Datum({
+class Products {
+  Products({
     required this.id,
     required this.name,
     required this.desc,
@@ -55,7 +55,7 @@ class Datum {
   int quantity;
   List<ProductDetail> productDetails;
 
-  factory Datum.fromJson(Map<String, dynamic> json) => Datum(
+  factory Products.fromJson(Map<String, dynamic> json) => Products(
     id: json["id"],
     name: json["name"],
     desc: json["desc"],

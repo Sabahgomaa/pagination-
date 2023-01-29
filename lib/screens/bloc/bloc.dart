@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pagination/screens/bloc/states.dart';
 import 'package:pagination/screens/model.dart';
@@ -14,27 +13,35 @@ class SearchBloc extends Bloc<SearchEvents, SearchStates> {
   SearchModel? model;
   String searchController = '';
   final formKey = GlobalKey<FormState>();
-  int page = 1;
+
+  //int page = 1;
+  String next = 'https://davinanewstore.davinastore.com/app/products/search';
 
   SearchBloc() : super(SearchStates()) {
     on<GetSearchEvent>(_getSearch);
     on<StartPaginationEvent>(_pagination);
   }
 
+  Future _getUrl(String url) async {
+    final response = await serverGate.getFromServer(url: url, params: {
+      'name': searchController.trim(),
+    });
+    return response;
+  }
+
   Future<void> _getSearch(
       GetSearchEvent event, Emitter<SearchStates> emit) async {
     emit(SearchLoadingState());
-    final res = await serverGate.getFromServer(
-        url:
-            "https://davinanewstore.davinastore.com/app/products/search?name=${searchController.trim()}&page=$page",
-        params: {
-          'keyword': searchController.trim(),
-        });
+    // final res = await serverGate.getFromServer(
+    //     url:
+    //         "https://davinanewstore.davinastore.com/app/products/search?name=${searchController.trim()}&page=$page",
+    //     params: {
+    //       'keyword': searchController.trim(),
+    //     });
+    final res = await _getUrl(next);
     if (res.success) {
       model = SearchModel.fromJson(res.response!.data);
-      if (kDebugMode) {
-        print(page);
-      }
+
       emit(SearchSuccessState());
     } else {
       emit(SearchFailedState(res.msg));
@@ -44,9 +51,11 @@ class SearchBloc extends Bloc<SearchEvents, SearchStates> {
   FutureOr<void> _pagination(
       StartPaginationEvent event, Emitter<SearchStates> emit) async {
     emit(SearchLoadingState());
-    await Future.delayed(const Duration(seconds: 3)); // streaming get next page
     if (model!.links.next.isNotEmpty) {
-      page++;
+      next = model!.links.next;
+      _getUrl(
+        next,
+      );
       add(GetSearchEvent());
     }
     emit(SearchSuccessState());

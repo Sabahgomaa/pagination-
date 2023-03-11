@@ -11,10 +11,11 @@ import 'event.dart';
 class SearchBloc extends Bloc<SearchEvents, SearchStates> {
   final serverGate = ServerGate();
   SearchModel? model;
+  List<Products> data = [];
+  List<Products> newData = [];
   String searchController = '';
   final formKey = GlobalKey<FormState>();
 
-  //int page = 1;
   String next = 'https://davinanewstore.davinastore.com/app/products/search';
 
   SearchBloc() : super(SearchStates()) {
@@ -32,16 +33,11 @@ class SearchBloc extends Bloc<SearchEvents, SearchStates> {
   Future<void> _getSearch(
       GetSearchEvent event, Emitter<SearchStates> emit) async {
     emit(SearchLoadingState());
-    // final res = await serverGate.getFromServer(
-    //     url:
-    //         "https://davinanewstore.davinastore.com/app/products/search?name=${searchController.trim()}&page=$page",
-    //     params: {
-    //       'keyword': searchController.trim(),
-    //     });
     final res = await _getUrl(next);
     if (res.success) {
       model = SearchModel.fromJson(res.response!.data);
-
+      newData = model!.data;
+      data.addAll(newData);
       emit(SearchSuccessState());
     } else {
       emit(SearchFailedState(res.msg));
